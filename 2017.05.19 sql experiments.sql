@@ -199,22 +199,25 @@ From #tempdb
 -------------------------------------------
 
 SELECT CensusDate, 
-	DATEDIFF(MONTH, 0, CensusDate) as [full months],  --how many *full* months from data=0 is CensusDate? 
+	DATEDIFF(MONTH, 0, CensusDate) as [full months]  --how many *full* months from date=0 is CensusDate? 
 
-	DATEADD(MONTH,    
-		DATEDIFF(MONTH, 0, CensusDate),  --DATEDIFF ( datepart , startdate , enddate ) 
-	0) AS [year_month_date_field]
+	, DATEADD(MONTH
+		, DATEDIFF(MONTH, 0, CensusDate)		--DATEDIFF (datepart , startdate , enddate ) 
+		, 0) AS [year_month_date_field]
 
 	-- DATEADD (datepart=MONTH , number= N, result from datediff field , date=0 [base datetime value??])
 	-- This counts N full months from base time period. 
 	-- E.g. if 2000-01-01 is base time, then both 2000-06-04 and 2000-06-15 are 6 *full* months from base, so 
 		--they're assigned the same value of 2000-06-01
 
+	, datename(month, censusdate) as [month name]
+
 FROM [ADTCMart].[ADTC].[vwCensusFact]
 WHERE CensusDate between '2016-01-01' and '2017-06-28' 
 	AND FacilityCode = '0112' 
+	and nursingunitcode='6e' 
 --GROUP BY DATEADD(MONTH, DATEDIFF(MONTH, 0, CensusDate), 0) 
-ORDER BY DATEADD(MONTH, DATEDIFF(MONTH, 0, CensusDate), 0); 
+ORDER BY CensusDate; 
 
 
 ------------------------------------
