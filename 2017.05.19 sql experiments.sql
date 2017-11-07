@@ -5,7 +5,28 @@ SET @variable = 'World';
 SELECT @variable as Hello ; 
 
 SELECT @variable; 
+------------------------------------------
+-- use of temptable: 
+create table #mrn (mrn varchar(25)); 
+insert into #mrn (mrn) values
+	('0127310'), 
+	('0132089'), 
+	('0133944'), 
+	('0134023'), 
+	('0136946'), 
+	('0155160'), 
+	('0157635'), 
+	('0159164'), 
+	('0161662'), 
+	('0172490'), 
+	('0179664'); 
 
+
+
+
+
+
+------------------------------------------
 -- table variable: alternative to temptable
 DECLARE @MyTableVar table(  
     LastStartDate datetime,
@@ -15,6 +36,22 @@ INSERT INTO @MyTableVar
 	VALUES('2017-01-01', 99921);
 
 SELECT * FROM @MyTableVar; 
+
+
+DECLARE @table2 table(  
+    LastStartDate datetime,
+	ID int);  
+
+INSERT INTO @table2
+	VALUES('2017-01-01', 99921)
+		,('2017-10-31', 32332) ;
+SELECT * From @table2; 
+
+-- Select * from @table2 where ID IN @MyTableVar;  might be better to do an inner join 
+select * from @table2 a inner join @MyTableVar b on a.ID=b.ID; 
+
+
+
 -------------------------------------------
 
 DECLARE @date AS datetime = '2017-05-01'; 
