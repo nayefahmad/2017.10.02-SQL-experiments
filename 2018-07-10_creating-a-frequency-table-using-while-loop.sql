@@ -19,7 +19,11 @@ BEGIN
 End
 --Select * From #tempCensusCounter
 
+
+
+---------------------------------------------------------
 -- Census in 6E, 6W, SCO considering all patients
+---------------------------------------------------------
 IF OBJECT_ID('tempdb.dbo.#SurgeryCensusAllPatients') IS NOT NULL DROP TABLE #SurgeryCensusAllPatients;  
 
 Select CensusDate, Count(PatientID) as CensusForSurgery
@@ -31,7 +35,9 @@ Where CensusDate >= '2017-01-01'
 Group by CensusDate
 -- Select * From #SurgeryCensusAllPatients
 
+---------------------------------------------------------
 -- Census in 6E, 6W, SCO considering OR patients only
+---------------------------------------------------------
 IF OBJECT_ID('tempdb.dbo.#SurgeryCensusORPatients') IS NOT NULL DROP TABLE #SurgeryCensusORPatients 
 
 Select a.CensusDate
@@ -49,7 +55,10 @@ Group by a.CensusDate
 --Select * From  #SurgeryCensusORPatients order by CensusDate
 
 
+
+---------------------------------------------------------
 -- FINAL FREQUENCY TABLE: ----------------
+---------------------------------------------------------
 Select a.CensusCount
 	, b.SurgeryCensusForAllPatients
 	, c.SurgeryCensusForORPatients
