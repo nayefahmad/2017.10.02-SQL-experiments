@@ -5,10 +5,21 @@ SET @variable = 'World';
 SELECT @variable as Hello ; 
 
 SELECT @variable; 
+
+
+
 ------------------------------------------
--- use of temptable: 
-create table #mrn (mrn varchar(25)); 
-insert into #mrn (mrn) values
+-- creating and altering tables: 
+------------------------------------------
+
+drop table if exists #mrn_table; 
+
+-- create table: 
+create table #mrn_table (mrn_column varchar(25)
+						 , site_column varchar(5)); 
+
+-- insert values into table 
+insert into #mrn_table (mrn_column) values
 	('0127310'), 
 	('0132089'), 
 	('0133944'), 
@@ -21,10 +32,29 @@ insert into #mrn (mrn) values
 	('0172490'), 
 	('0179664'); 
 
+--result: 
+select * from #mrn_table; 
+
+-- add a colum with alter + add ----------------------
+alter table #mrn_table
+add age int
 
 
+--result: 
+select * from #mrn_table; 
 
 
+-- update specific values useing update: ------------------
+update #mrn_table
+set site_column = 'LGH' 
+
+update #mrn_table
+set age = 120 
+where mrn_column = '0155160' 
+
+
+--result: 
+select * from #mrn_table; 
 
 ------------------------------------------
 -- table variable: alternative to temptable
