@@ -56,8 +56,13 @@ where mrn_column = '0155160'
 --result: 
 select * from #mrn_table; 
 
-------------------------------------------
+
+
+
+-----------------------------------------------------------
 -- table variable: alternative to temptable
+-----------------------------------------------------------
+
 DECLARE @MyTableVar table(  
     LastStartDate datetime,
 	ID int);  
@@ -90,10 +95,13 @@ SELECT ContinuumID, AdjustedDischargeDate
 FROM [ADTCMart].[ADTC].[vwAdmissionDischargeFact]
 WHERE AdjustedDischargeDate = @date; 
 
--------------------------------------------
--- generate a string of dates: -------------------
--------------------------------------------
-DROP TABLE #tempdates; 
+
+
+
+---------------------------------------------------------------
+-- generate a string of dates: 
+---------------------------------------------------------------
+DROP TABLE if exists #tempdates; 
 
 declare @date as datetime; set @date  = '2015-12-31'; 
 create table #tempdates (date_seq datetime);	-- create table with 1 column "date_seq", which is formatted as a date
