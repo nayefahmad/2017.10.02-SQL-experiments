@@ -44,7 +44,7 @@ add age int
 select * from #mrn_table; 
 
 
--- update specific values useing update: ------------------
+-- update specific values useing update + set: ------------------
 update #mrn_table
 set site_column = 'LGH' 
 
