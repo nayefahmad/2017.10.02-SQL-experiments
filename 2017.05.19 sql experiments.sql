@@ -340,3 +340,63 @@ Order by StartDate
 	, TriageAcuityCode; 
 
 
+---------------------------------------------
+drop table if exists #emp; 
+
+create table #emp (
+	id int
+	, name varchar(15)
+)
+
+
+insert into #emp values
+	('1', 'Amy')
+	, ('2', 'Bob')
+	, ('3', 'Cat')
+	, ('4', 'Dylan')
+
+-- select * from #emp 
+
+alter table #emp
+add company varchar(25); 
+
+update #emp
+set company = 'Facebook' 
+where name = 'Bob'
+
+-- select * from #emp 
+
+
+
+drop table if exists #orders; 
+create table #orders(
+	order_id int
+	, amount int 
+	, emp_id int
+) 
+
+insert into #orders values 
+	('1', '455', '2')
+	, ('2', '1200', '2')
+	, ('3', '41', '36')
+
+-- select * from #orders
+
+
+select * 
+from #emp e
+left join #orders o
+	on e.id = o.emp_id; 
+
+select * 
+from #emp e
+inner join #orders o
+	on e.id = o.emp_id; 
+
+select * 
+from #emp e
+right join #orders o
+	on e.id = o.emp_id; 
+
+
+
