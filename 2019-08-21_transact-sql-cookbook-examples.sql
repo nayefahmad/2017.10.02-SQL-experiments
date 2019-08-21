@@ -45,6 +45,24 @@ select * from #Students
 /*------------------------------------------------------------
 Solution 1:
 This uses operators specific to TSQL 
+
+Note that this is a correlated sub-query - i.e. one that won't run on its 
+own, because it's dependent on the outer query.
+
+The benefit of correlated sub-queries is that they allow you do take each 
+row of the outer query, and check it against the results of another query 
+
+Here, we take each {student, course, termpaper, max(score)} row from the 
+outer query, and we compare it with the list of 2 rows of {score} in the 
+inner query. 
+
+Only if the score in the outer query matches with one of hte top 2 
+
+Q. Why are we using Max( ) and group by in the outer query? Note that there 
+is only one score per {student, course, termpaper} combination, so why do 
+we need max( )? 
+Ans. Because the HAVING clause 
+
 */------------------------------------------------------------
 
 SELECT  s1.StudentName, s1.CourseId, s1.TermPaper, MAX(s1.Score) max_Score
@@ -53,9 +71,15 @@ GROUP BY s1.CourseId, s1.StudentName, s1.TermPaper
 HAVING MAX(s1.Score) IN 
    (SELECT TOP 2 s2.Score 
        FROM #Students s2
-       WHERE s1.CourseId=s2.CourseId AND  -- this is an inner join, specified using "old-style" implicit join 
+       WHERE s1.CourseId=s2.CourseId AND  -- this is an inner join, specified using "old-style" implicit join(?)
           s1.StudentName=s2.StudentName
 	order by s2.Score desc)
+
+
+
+
+
+
 
 /*------------------------------------------------------------
 Solution 2:
