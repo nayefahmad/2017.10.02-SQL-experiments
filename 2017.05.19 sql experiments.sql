@@ -399,4 +399,13 @@ right join #orders o
 	on e.id = o.emp_id; 
 
 
+select count (name) as count_names 
+from #emp e 
+left join #orders o 
+	on e.id = o.emp_id
+
+select count (distinct name) as count_distinct_names 
+from #emp e 
+left join #orders o 
+	on e.id = o.emp_id
 
