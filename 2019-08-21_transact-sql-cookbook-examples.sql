@@ -65,15 +65,22 @@ Ans. Because the HAVING clause
 
 */------------------------------------------------------------
 
-SELECT  s1.StudentName, s1.CourseId, s1.TermPaper, MAX(s1.Score) max_Score
+SELECT  s1.StudentName, s1.CourseId, s1.TermPaper, s1.Score 
 FROM #Students s1
-GROUP BY s1.CourseId, s1.StudentName, s1.TermPaper
-HAVING MAX(s1.Score) IN 
-   (SELECT TOP 2 s2.Score 
-       FROM #Students s2
-       WHERE s1.CourseId=s2.CourseId AND  -- this is an inner join, specified using "old-style" implicit join(?)
-          s1.StudentName=s2.StudentName
+where s1.score IN (
+	
+	-- correlated sub-query: for each row in outer query, check 
+	-- against a list produced by the sub-query below. 
+	
+	-- If the score in outer query row is not in the list returned
+	-- by the sub-query, then that row is deleted from the outer 
+	-- query 
+	SELECT TOP 2 s2.Score 
+    FROM #Students s2
+    WHERE s2.CourseId = s1.CourseId AND    -- think of replacing the reference to s1.CourseID with the value of courseID in the current row of the outer query that is under consideration
+          s2.StudentName = s1.StudentName
 	order by s2.Score desc)
+order by s1.StudentName, s1.CourseId, s1.TermPaper
 
 
 
