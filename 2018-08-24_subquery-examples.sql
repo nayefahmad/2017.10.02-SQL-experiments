@@ -86,6 +86,7 @@ where age = (select max(age)
 
 -- Solution 1: using join 
 select t1.patientid, t1.age
+-- into #t3
 from #t1_ed_visits t1
 	inner join #t2_adtc t2
 		on t1.patientid =  t2.patientid
@@ -93,15 +94,34 @@ order by t1.age desc
 
 --Solution 2: using sub-query 
 select t1.patientid, t1.age
+-- into #t4
 from #t1_ed_visits t1
 where t1.patientID in (select patientID 
 					   from #t2_adtc) 
 order by age desc  
 
 
+-- which rows exist in #t3 that don't exist in #t4? 
+select patientid
+from #t3
+
+Except   -- INTERSECT and EXCEPT are new additions to TSQL 
+
+select patientid  
+from #t4 
 
 
-
+-- using a cte (aka using WITH operator) 
+with match_table as (
+	select #t3.patientid 
+		, case when #t3.patientid = #t4.patientid THEN 'true' end as is_match
+	from #t3 
+	full outer join #t4 
+	on #t3.patientid = #t4.Patientid
+) select * 
+from match_table 
+where is_match = 'true' 
+ 
 
 
 
