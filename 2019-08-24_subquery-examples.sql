@@ -48,7 +48,10 @@ order by t1.age desc
 -- Solution 2: using variables 
 declare @max_age as int = (select max(age) 
 						   from #t1_ed_visits) 
--- select @max_age  -- result 
+
+-- unrelated side note: to update a variable that already exists, use a SET statement 
+-- set @max_age = 999; 
+-- select @max_age; -- result 
 
 declare @max_age_pt_id as int = (select patientID 
 								 from #t1_ed_visits 
