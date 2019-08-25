@@ -141,3 +141,49 @@ Another advantage of the subquery approach: it's very easy to negate: just use
 ---------------------------------------------------------------------
 
 
+
+
+---------------------------------------------------------------------
+-- Question 4: Calculate a running total  
+---------------------------------------------------------------------
+
+-- create a table: 
+drop table if exists #t5_for_running_total; 
+create table #t5_for_running_total (id int, amount int); 
+
+insert into #t5_for_running_total values 
+	(1, 15), 
+	(2, 300), 
+	(3, 22.4), 
+	(4, 32), 
+	(5, 1200);
+	
+select * from #t5_for_running_total;  
+
+
+-- solution 1: using a correlated subquery 
+/*
+Note that this is a correlated sub-query - i.e. one that won't run on its 
+own, because it's dependent on the outer query.
+
+The benefit of correlated sub-queries is that they allow you do take each 
+row of the outer query, and check it against the results of another query 
+*/
+
+select t5.id
+	, t5.amount 
+
+	-- correlated scalar subquery in the SELECT statement of outer query: 
+	, (select sum(amount)  -- note that group by not necessary to get the sum 
+	from #t5_for_running_total t5_2
+	where t5_2.id <= t5.id  -- this is where outer and inner queries are linked together 
+	) as cumulative_total  -- result of subquery is a single number (scalar subquery), which is why it can be in the SELECT statement 
+
+from #t5_for_running_total t5
+
+
+
+
+
+
+
