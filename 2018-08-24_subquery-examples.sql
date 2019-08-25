@@ -5,7 +5,7 @@ Subquery examples
 2019-08-24
 Nayef 
 
-From "SQL Server TSQL Fundamentals"
+From "SQL Server TSQL Fundamentals" by Itzik Ben-Gan 
 
 */---------------------------------------------------------
 
@@ -88,7 +88,7 @@ where age = (select max(age)
 ---------------------------------------------------------------------
 
 drop table if exists #t3; 
-drop table if exists #t4;
+
 
 -- Solution 1: using inner join 
 select t1.patientid, t1.age --t2.adjustedadmissiondate
@@ -118,18 +118,24 @@ but you'd have to first recognize that there might be duplicates.
 
 
 --Solution 2: using sub-query 
+drop table if exists #t4;
+
 select t1.patientid, t1.age
 into #t4
 from #t1_ed_visits t1
-where t1.patientID in (select patientID 
+where t1.patientID in (select patientID   -- you can also use WHERE column NOT IN subquery_result
 					   from #t2_adtc) 
 order by age desc  
 
 -- select * from #t4 order by age desc; 
 
--- Note that here we don't get duplicate patientIDs caused by 2 admissions in #t2_adtc
+/*
+Note that here we don't get duplicate patientIDs caused by 2 admissions in #t2_adtc
 
+Another advantage of the subquery approach: it's very easy to negate: just use 
+"WHERE column **NOT IN** subquery_result"
 
+*/
 ---------------------------------------------------------------------
 -- Question 3: Find patients in ED data who aren't in ADTC data (INTERSECT and EXCEPT) 
 ---------------------------------------------------------------------
