@@ -110,6 +110,10 @@ on Jan 5th.
 Do we want these to show up as 2 separate rows? It depends. 
 > Do you want 1 row per admission? Then Yes. 
 > Do you want 1 row per patient? Then No. 
+
+Note that we can remove the duplicate by using "SELECT distinct", 
+but you'd have to first recognize that there might be duplicates. 
+
 */
 
 
@@ -126,30 +130,8 @@ order by age desc
 -- Note that here we don't get duplicate patientIDs caused by 2 admissions in #t2_adtc
 
 
-
-
--- which rows exist in #t3 that don't exist in #t4? 
-select patientid
-from #t3
-
-Except   -- INTERSECT and EXCEPT are new additions to TSQL 
-
-select patientid  
-from #t4 
-
-
--- using a cte (aka using WITH operator) 
-with match_table as (
-	select #t3.patientid 
-		, case when #t3.patientid = #t4.patientid THEN 'true' end as is_match
-	from #t3 
-	full outer join #t4 
-	on #t3.patientid = #t4.Patientid
-) select * 
-from match_table 
-where is_match = 'true' 
- 
-
-
+---------------------------------------------------------------------
+-- Question 3: Find patients in ED data who aren't in ADTC data (INTERSECT and EXCEPT) 
+---------------------------------------------------------------------
 
 
