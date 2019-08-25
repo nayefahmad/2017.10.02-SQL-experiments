@@ -19,12 +19,15 @@ from EDMart.[dbo].[vwEDVisitIdentifiedRegional]
 where FacilityShortName = 'LGH' 
 	and StartDate = '2018-01-01' 
 
+-- select t1.patientid, t1.* from #t1_ed_visits t1 order by t1.patientid
 
 select * 
 into #t2_adtc
 from ADTCMart.ADTC.AdmissionDischargeView
 where AdmissionFacilityLongName = 'LIONS GATE HOSPITAL' 
 	and AdjustedAdmissionDate between '2018-01-01' and '2018-01-07' 
+
+select t2.patientid, t2.* from #t2_adtc t2 order by t2.patientid 
 
 ---------------------------------------------------------------------
 -- Q1 Return info on the visit with max age
@@ -81,24 +84,48 @@ where age = (select max(age)
 
 
 ---------------------------------------------------------------------
--- Question 2: return rows with patients who exist in ADTC 
+-- Question 2: return rows in ED data with patients who exist in ADTC data 
 ---------------------------------------------------------------------
 
--- Solution 1: using join 
-select t1.patientid, t1.age
--- into #t3
+drop table if exists #t3; 
+drop table if exists #t4;
+
+-- Solution 1: using inner join 
+select t1.patientid, t1.age --t2.adjustedadmissiondate
+into #t3
 from #t1_ed_visits t1
 	inner join #t2_adtc t2
 		on t1.patientid =  t2.patientid
 order by t1.age desc 
 
+-- select * from #t3 order by age desc  
+
+
+/*
+Note that 52 year old with ptID = 16590860 shows up twice. 
+
+Why? Because they have 2 admissions in #t2_adtc, one on Jan 1st, one 
+on Jan 5th. 
+
+Do we want these to show up as 2 separate rows? It depends. 
+> Do you want 1 row per admission? Then Yes. 
+> Do you want 1 row per patient? Then No. 
+*/
+
+
 --Solution 2: using sub-query 
 select t1.patientid, t1.age
--- into #t4
+into #t4
 from #t1_ed_visits t1
 where t1.patientID in (select patientID 
 					   from #t2_adtc) 
 order by age desc  
+
+-- select * from #t4 order by age desc; 
+
+-- Note that here we don't get duplicate patientIDs caused by 2 admissions in #t2_adtc
+
+
 
 
 -- which rows exist in #t3 that don't exist in #t4? 
