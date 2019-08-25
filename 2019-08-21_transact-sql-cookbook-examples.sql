@@ -58,10 +58,6 @@ inner query.
 
 Only if the score in the outer query matches with one of hte top 2 
 
-Q. Why are we using Max( ) and group by in the outer query? Note that there 
-is only one score per {student, course, termpaper} combination, so why do 
-we need max( )? 
-Ans. Because the HAVING clause 
 
 */------------------------------------------------------------
 
