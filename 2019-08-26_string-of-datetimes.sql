@@ -4,7 +4,8 @@ GO
 -- this GO statement ensures that the first thing SQL does is drop the table. This is necessary 
 -- for the rest of the program to work
 
-declare @startdate datetime = '2019-01-01 00:00:00.00' 
+declare @startdate datetime = '2018-04-28 00:00:00.00' 
+declare @horizon_in_minutes int = 40320  -- 4 weeks
 
 -- create table with a column of datetimes 
 drop table if exists #datetimes
@@ -19,7 +20,7 @@ insert into #datetimes values
 -- use while loop to populate the table 
 declare @counter int = 1 
 
-while @counter <= 1440
+while @counter <= @horizon_in_minutes
 begin 
 	insert into #datetimes values (DATEADD(mi, @counter, @startdate))
 	set @counter = @counter + 1
@@ -39,11 +40,11 @@ update #datetimes
 set entry_count = (select count(*) 
 				   from ADTCMart.ADTC.CensusView
 				   where FacilityLongName = 'Richmond HOspital' 
-					and CensusDate = '2019-01-01'
+					and CensusDate = @startdate
 				   group by CensusDate) 
-where datetimes_col = '2019-01-01 00:00:00.000' 
+where datetimes_col = @startdate 
 
-select * from #datetimes order by datetimes_col
+-- select * from #datetimes order by datetimes_col
 
 
 
@@ -67,18 +68,37 @@ order by t1.datetimes_col
 
 
 
-select * 
-	, (isnull(count_admits, 0) - isnull(count_discharges, 0)) as net_change 
-from (
-	select * 
-	, case when AdjustedAdmissionDate is not null then 1 end as count_admits
-	, case when AdjustedDischargeDate is not null then 1 end as count_discharges
+update #t4_add_admits_discharges
+set entry_count = 1 
+where AdjustedAdmissionDate is not null 
 
-	from #t4_add_admits_discharges 
-) as sub1
+update #t4_add_admits_discharges
+set exit_count = -1
+where AdjustedDischargeDate is not null 
+
+ 
+-- select * from #t4_add_admits_discharges order by datetimes_col
+drop table if exists #t5_add_net_changes
+select *
+	, (isnull(entry_count, 0) + isnull(exit_count, 0)) as net_change
+into #t5_add_net_changes
+from #t4_add_admits_discharges
 order by datetimes_col
- 
-
-
 
  
+-- select * from #t5_add_net_changes order by datetimes_col
+
+
+
+
+-- use correlated subquery to find running total 
+select t5_1.*
+	, (
+	select sum(net_change) 
+	from #t5_add_net_changes t5_2
+	where t5_2.datetimes_col <= t5_1.datetimes_col
+	) as census_minute_level
+
+from #t5_add_net_changes t5_1
+order by datetimes_col
+
