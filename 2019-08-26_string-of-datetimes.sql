@@ -5,7 +5,7 @@ GO
 -- for the rest of the program to work
 
 declare @startdate datetime = '2018-04-28 00:00:00.00' 
-declare @horizon_in_minutes int = 40320  -- 4 weeks
+declare @horizon_in_minutes int = 525600  -- 4 weeks
 
 -- create table with a column of datetimes 
 drop table if exists #datetimes
@@ -13,6 +13,7 @@ create table #datetimes (datetimes_col datetime)
 
 insert into #datetimes values 
 	(@startdate) 
+
 
 -- select * from #datetimes
 
@@ -25,6 +26,8 @@ begin
 	insert into #datetimes values (DATEADD(mi, @counter, @startdate))
 	set @counter = @counter + 1
 end 
+
+
 
 
 --select * from #datetimes order by datetimes_col
@@ -44,6 +47,15 @@ set entry_count = (select count(*)
 				   group by CensusDate) 
 where datetimes_col = @startdate 
 
+
+-- add site 
+alter table #datetimes
+add site varchar(25)
+
+update #datetimes
+set site = 'Richmond Hospital' 
+
+
 -- select * from #datetimes order by datetimes_col
 
 
@@ -51,6 +63,7 @@ where datetimes_col = @startdate
 -- now join on ADTC.admissiondischarge: 
 drop table if exists #t4_add_admits_discharges; 
 select t1.datetimes_col
+	, t1.site
 	, t2_ad.AdjustedAdmissionDate
 	, t2_ad.AdjustedAdmissionTime
 	, t3_ad.AdjustedDischargeDate
@@ -61,8 +74,14 @@ into #t4_add_admits_discharges
 from #datetimes t1
 	LEFT JOIN ADTCMart.ADTC.AdmissionDischargeView t2_ad
 		ON t1.datetimes_col = (t2_ad.AdjustedAdmissionDate + t2_ad.AdjustedAdmissionTime)
+		and t1.site = t2_ad.[AdmissionFacilityLongName]
+		-- todo: here you can add conditions for nursing unit code, admitting doctor type, etc.
+
 	left join ADTCMart.ADTC.AdmissionDischargeView t3_ad
 		on t1.datetimes_col = (t3_ad.AdjustedDischargeDate + t3_ad.AdjustedDischargeTime)
+		and t1.site = t3_ad.DischargeFacilityLongName
+		-- todo: here you can add conditions for nursing unit code, admitting doctor type, etc.
+
 order by t1.datetimes_col
 
 
