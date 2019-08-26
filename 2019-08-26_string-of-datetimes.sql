@@ -42,8 +42,10 @@ add entry_count int, exit_count int
 update #datetimes
 set entry_count = (select count(*) 
 				   from ADTCMart.ADTC.CensusView
-				   where FacilityLongName = 'Richmond HOspital' 
-					and CensusDate = @startdate
+				   where FacilityLongName = 'Richmond Hospital' 
+						and CensusDate = @startdate
+						-- todo: here you can add conditions for nursing unit, physician type, etc. 
+
 				   group by CensusDate) 
 where datetimes_col = @startdate 
 
