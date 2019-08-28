@@ -139,15 +139,13 @@ Another advantage of the subquery approach: it's very easy to negate: just use
 "WHERE column **NOT IN** subquery_result"
 
 */
----------------------------------------------------------------------
--- Question 3: Find patients in ED data who aren't in ADTC data (INTERSECT and EXCEPT) 
----------------------------------------------------------------------
+
 
 
 
 
 ---------------------------------------------------------------------
--- Question 4: Calculate a running total  
+-- Question 3: Calculate a running total  
 ---------------------------------------------------------------------
 
 -- create a table: 

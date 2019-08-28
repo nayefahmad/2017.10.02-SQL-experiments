@@ -341,6 +341,8 @@ Order by StartDate
 
 
 ---------------------------------------------
+-- Updating tables with UPDATE+SET and ALTER + ADD 
+---------------------------------------------
 drop table if exists #emp; 
 
 create table #emp (
@@ -409,3 +411,8 @@ from #emp e
 left join #orders o 
 	on e.id = o.emp_id
 
+
+
+---------------------------------------------------------------------
+-- Question: Find patients in ED data who aren't in ADTC data (INTERSECT and EXCEPT) 
+---------------------------------------------------------------------

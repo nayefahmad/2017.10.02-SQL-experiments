@@ -4,8 +4,8 @@ GO
 -- this GO statement ensures that the first thing SQL does is drop the table. This is necessary 
 -- for the rest of the program to work
 
-declare @startdate datetime = '2018-04-28 00:00:00.00' 
-declare @horizon_in_minutes int = 525600  -- 4 weeks
+declare @startdate datetime = '2018-05-28 00:00:00.00' 
+declare @horizon_in_minutes int = 1440  -- 4 weeks
 
 -- create table with a column of datetimes 
 drop table if exists #datetimes
