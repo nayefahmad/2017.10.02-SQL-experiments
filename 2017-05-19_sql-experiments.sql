@@ -416,3 +416,69 @@ left join #orders o
 ---------------------------------------------------------------------
 -- Question: Find patients in ED data who aren't in ADTC data (INTERSECT and EXCEPT) 
 ---------------------------------------------------------------------
+
+-- let's create tables to play with 
+drop table if exists #t1_ed_visits;  
+drop table if exists #t2_adtc;  
+
+select * 
+into #t1_ed_visits 
+from EDMart.[dbo].[vwEDVisitIdentifiedRegional]
+where FacilityShortName = 'LGH' 
+	and StartDate = '2018-01-01' 
+-- select t1.patientid, t1.* from #t1_ed_visits t1 order by t1.patientid
+
+select * 
+into #t2_adtc
+from ADTCMart.ADTC.AdmissionDischargeView
+where AdmissionFacilityLongName = 'LIONS GATE HOSPITAL' 
+	and AdjustedAdmissionDate between '2018-01-01' and '2018-01-07' 
+-- select t2.patientid, t2.* from #t2_adtc t2 order by t2.patientid 
+
+
+
+-- find set intersection: 
+select patientID 
+from #t1_ed_visits
+
+INTERSECT 
+
+select patientID 
+from #t2_adtc
+
+-- let's check with a join: first repeat the above query, 
+-- then get the setdiff with EXCEPT
+
+-- note that when using a join, it's easy to forget to use "distinct", and 
+-- than will give the wrong number bcoz of duplicates 
+
+select patientID 
+from #t1_ed_visits
+INTERSECT 
+select patientID 
+from #t2_adtc
+
+EXCEPT 
+
+select distinct t1.patientID  
+from #t1_ed_visits t1
+	inner join #t2_adtc t2
+		on t1.PatientID = t2.PatientID
+
+/* this part is required because it matters which table appears first in EXCEPT  
+EXCEPT
+
+select patientID 
+from #t1_ed_visits
+INTERSECT 
+select patientID 
+from #t2_adtc
+*/
+
+
+
+
+
+
+
+
