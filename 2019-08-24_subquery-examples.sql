@@ -62,7 +62,7 @@ select patientid, age
 from #t1_ed_visits
 where PatientID = @max_age_pt_id; 
 
--- let's use those variables to query another table: 
+-- unrelated: let's use those variables to query another table: 
 --select patientID, [AdmissionAge], adjustedadmissiondate 
 --from ADTCMart.[ADTC].[AdmissionDischargeView]
 --where patientId = @max_age_pt_id
@@ -174,13 +174,34 @@ row of the outer query, and check it against the results of another query
 select t5.id
 	, t5.amount 
 
-	-- correlated scalar subquery in the SELECT statement of outer query: 
+	-- Inner query: 
+	-- This is a correlated, scalar subquery in the SELECT statement of outer query: 
 	, (select sum(amount)  -- note that group by not necessary to get the sum 
-	from #t5_for_running_total t5_2
+	from #t5_for_running_total t5_2  -- referring to same table as in the outer query 
 	where t5_2.id <= t5.id  -- this is where outer and inner queries are linked together 
-	) as cumulative_total  -- result of subquery is a single number (scalar subquery), which is why it can be in the SELECT statement 
+	) as cumulative_total_using_subquery  -- result of subquery is a single number (scalar subquery), which is why it can be in the SELECT statement 
 
 from #t5_for_running_total t5
+
+
+
+-- solution 2: using window functions: 
+select t5.id
+	, t5.amount
+	, sum(t5.amount) over(order by id
+						  rows between unbounded preceding and current row) as cumulative_total_using_window
+from #t5_for_running_total t5
+
+
+
+
+
+
+
+
+
+
+
 
 
 
