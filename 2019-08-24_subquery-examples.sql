@@ -11,7 +11,7 @@ From "SQL Server TSQL Fundamentals" by Itzik Ben-Gan
 -- Question 2: return rows in ED data with patients who exist in ADTC data 
 -- Question 3: Calculate a running total  
 -- Question 4: Find discharge disposition of all patient's latest ED visit 
-
+-- Question 5: Express the row amount as a percentage of total column amount 
 
 */---------------------------------------------------------
 
@@ -204,8 +204,8 @@ from #t5_for_running_total t5
 ---------------------------------------------------------------------
 -- Question 4: Find discharge disposition of all patient's latest ED visit 
 ---------------------------------------------------------------------
--- set up #t6 
 
+-- set up #t6 
 drop table if exists #t6_ed_data; 
 select * 
 into #t6_ed_data
@@ -248,7 +248,7 @@ order by patientId
 
 
 
--- Solution 2: using subquery: 
+-- Solution 2: using scalar, correlated subquery in the WHERE clause of the outer query: 
 select t6_1.patientid
 	, t6_1.StartDate
 	, t6_1.DischargeDispositionDescription
@@ -263,6 +263,42 @@ order by PatientID
 
 
 
+
+---------------------------------------------------------------------
+-- Question 5: Express the row amount as a percentage of total column amount 
+---------------------------------------------------------------------
+
+-- set up an example table 
+drop table if exists #t8_ed_visits_by_year
+select StartDateFiscalYear
+	, count(*) as annual_ed_visits
+into #t8_ed_visits_by_year
+from EDMart.dbo.vwEDVisitIdentifiedRegional
+where FacilityShortName = 'RHS' 
+group by StartDateFiscalYear
+order by StartDateFiscalYear
+
+
+
+-- Solution 1: using self-contained subquery in the SELECT clause of outer query: 
+select t8_1.StartDateFiscalYear
+	, t8_1.annual_ed_visits
+	, cast(100. * t8_1.annual_ed_visits/(select sum(t8_2.annual_ed_visits)
+									     from #t8_ed_visits_by_year t8_2) 
+	as numeric(5, 2)) as percentage_of_total  -- numeric(5, 2) -> 5 is the "precision"; 2 is the "scale" 
+from #t8_ed_visits_by_year t8_1
+order by StartDateFiscalYear
+
+
+
+-- Solution 2: using window function: 
+select StartDateFiscalYear
+	, annual_ed_visits
+
+	-- over( ) with no arguments just means that the "window" is over the whole column 
+	, cast(100. * annual_ed_visits/sum(annual_ed_visits) over() as numeric(5, 2))as percent_of_total
+from #t8_ed_visits_by_year
+order by StartDateFiscalYear
 
 
 
