@@ -228,7 +228,7 @@ group by patientid
 	--, DischargeDispositionCode
 order by patientId
 
-select * from #t7_find_latest_ed_startdate order by patientid  -- result
+-- select * from #t7_find_latest_ed_startdate order by patientid  -- result
 
 /*
 note that I can't pull the DischargeDispositionCode in this query where I find the 
@@ -241,10 +241,29 @@ Instead, I have to join this result back against #t6:
 select t7.*
 	, t6.DischargeDispositionDescription
 from #t7_find_latest_ed_startdate t7
-	left join #t6_ed_data t6 
-		on t7.PatientID = t6.PatientID
-		and t7.latest_visit = t6.StartDate
+left join #t6_ed_data t6 
+	on t7.PatientID = t6.PatientID
+	and t7.latest_visit = t6.StartDate
 order by patientId
+
+
+
+-- Solution 2: using subquery: 
+select t6_1.patientid
+	, t6_1.StartDate
+	, t6_1.DischargeDispositionDescription
+
+from #t6_ed_data t6_1
+where StartDate = (Select max(StartDate)
+				   from #t6_ed_data t6_2
+				   where t6_1.PatientID = t6_2.PatientID)
+order by PatientID
+
+-- Note that PatientID = 18 shows up twice because they have 2 discharges on the same day 
+
+
+
+
 
 
 
