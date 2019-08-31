@@ -7,10 +7,10 @@ Nayef
 
 From "SQL Server TSQL Fundamentals" by Itzik Ben-Gan 
 
--- Question 1: Return info on the visit with max age
+-- Question 1: Return ungrouped cols for the visit with max age
 -- Question 2: return rows in ED data with patients who exist in ADTC data 
--- Question 3: Calculate a running total  
--- Question 4: Find discharge disposition of all patient's latest ED visit 
+-- Question 3: Calculate a running/cumulative total  
+-- Question 4: Find discharge disposition of each patient's latest ED visit 
 -- Question 5: Express the row amount as a percentage of total column amount 
 
 */---------------------------------------------------------
