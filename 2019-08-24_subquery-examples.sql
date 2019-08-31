@@ -7,6 +7,12 @@ Nayef
 
 From "SQL Server TSQL Fundamentals" by Itzik Ben-Gan 
 
+-- Question 1: Return info on the visit with max age
+-- Question 2: return rows in ED data with patients who exist in ADTC data 
+-- Question 3: Calculate a running total  
+-- Question 4: Find discharge disposition of all patient's latest ED visit 
+
+
 */---------------------------------------------------------
 
 drop table if exists #t1_ed_visits;  
@@ -30,7 +36,7 @@ where AdmissionFacilityLongName = 'LIONS GATE HOSPITAL'
 select t2.patientid, t2.* from #t2_adtc t2 order by t2.patientid 
 
 ---------------------------------------------------------------------
--- Q1 Return info on the visit with max age
+-- Question 1: Return info on the visit with max age
 ---------------------------------------------------------------------
 
 -- Solution 1: using top 1 
@@ -195,16 +201,50 @@ from #t5_for_running_total t5
 
 
 
+---------------------------------------------------------------------
+-- Question 4: Find discharge disposition of all patient's latest ED visit 
+---------------------------------------------------------------------
+-- set up #t6 
+
+drop table if exists #t6_ed_data; 
+select * 
+into #t6_ed_data
+from EDMart.dbo.vwEDVisitIdentifiedRegional
+where 1=1 
+	and StartDate between '2018-01-01' and '2019-01-01' 
+	and FacilityShortName = 'RHS' 
 
 
 
+-- solution 1: using group by: 
+drop table if exists #t7_find_latest_ed_startdate; 
+select patientid
+	--, DischargeDispositionCode
+	, count(startdate) as num_visits 
+	, max(StartDate) as latest_visit
+into #t7_find_latest_ed_startdate
+from #t6_ed_data
+group by patientid
+	--, DischargeDispositionCode
+order by patientId
 
+select * from #t7_find_latest_ed_startdate order by patientid  -- result
 
+/*
+note that I can't pull the DischargeDispositionCode in this query where I find the 
+max start date. That would cause the grouping to be more granular than patient-level, 
+going to patient-DischargeDispositionCode level, which I don't want. 
 
+Instead, I have to join this result back against #t6: 
+*/
 
-
-
-
+select t7.*
+	, t6.DischargeDispositionDescription
+from #t7_find_latest_ed_startdate t7
+	left join #t6_ed_data t6 
+		on t7.PatientID = t6.PatientID
+		and t7.latest_visit = t6.StartDate
+order by patientId
 
 
 
