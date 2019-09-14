@@ -15,8 +15,10 @@ SELECT @variable;
 drop table if exists #mrn_table; 
 
 -- create table: 
-create table #mrn_table (mrn_column varchar(25)
-						 , site_column varchar(5)); 
+create table #mrn_table (
+	mrn_column varchar(25), 
+	site_column varchar(5)
+); 
 
 -- insert values into table 
 insert into #mrn_table (mrn_column) values
