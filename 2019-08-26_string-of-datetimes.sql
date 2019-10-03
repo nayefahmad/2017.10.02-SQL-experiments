@@ -9,6 +9,8 @@ joins rather than than a for loop
 
 For reference, see the query https://github.com/nayefahmad/SQL-experiments/blob/master/2018-10-19_lgh_hospitalist-census-by-tod-previous-query-copied-from-excel.sql
 
+TODO: 
+1. Hypothesis: I need to properly group the discharges before I can join on them in #t4
 
 ********************************************************************/
 
@@ -20,9 +22,9 @@ GO
 -- this GO statement ensures that the first thing SQL does is drop the table. This is necessary 
 -- for the rest of the program to work
 
-declare @startdate datetime = '2019-09-28 00:00:00.00' 
+declare @startdate datetime = '2017-03-28 00:00:00.00' 
 declare @horizon_in_minutes int = 1440  -- 4 weeks
-declare @site varchar(50) = 'Richmond Hospital' 
+declare @site varchar(50) = 'Lions Gate Hospital' 
 
 -- create table with a column of datetimes 
 create table #datetimes (datetimes_col datetime) 
@@ -80,8 +82,12 @@ Join datetime col to get full list of admits and discharges by minute
 drop table if exists #t4_add_admits_discharges; 
 select t1.datetimes_col
 	, t1.[site]
+
+	, t2_ad.PatientId as admit_pt_id
 	, t2_ad.AdjustedAdmissionDate
 	, t2_ad.AdjustedAdmissionTime
+
+	, t3_ad.PatientId as disch_pt_id
 	, t3_ad.AdjustedDischargeDate
 	, t3_ad.AdjustedDischargeTime
 	, t1.entry_count
@@ -100,7 +106,7 @@ from #datetimes t1
 
 order by t1.datetimes_col
 
--- select * from #t4_add_admits_discharges order by datetimes_col
+select * from #t4_add_admits_discharges order by datetimes_col
 
 /*********************************************************************************
 Code queue operations: enqueue and dequeue 
@@ -169,13 +175,13 @@ from #t5_add_net_changes t5_1
 order by datetimes_col
 
 -- view: 
-select * from #t6_census_by_minute order by datetimes_col
+-- select * from #t6_census_by_minute order by datetimes_col
 
 
 /*********************************************************************************
 Validation with ADTC CensusView
 *********************************************************************************/
-
+/*
 -- ending figure from my calculation: 
 select census_minute_level 
 	, datetimes_col
@@ -217,10 +223,21 @@ where 1=1
 	and AdjustedDischargeDate = @startdate 
 -- 114 discharges 
 
-
+*/
+------------------------------------------------------------------
 -- Are we counting too many admits?? 
 select count(*) as admit_from_adtc
 from ADTCMart.ADTC.AdmissionDischargeView
 where 1=1 
 	and AdmissionFacilityLongName = @site
 	and AdjustedAdmissionDate = @startdate 
+
+-- disaggregated: 
+select PatientId
+	, AdjustedAdmissionDate
+	, AdjustedAdmissionTime
+from ADTCMart.ADTC.AdmissionDischargeView
+where 1=1 
+	and AdmissionFacilityLongName = @site
+	and AdjustedAdmissionDate = @startdate 
+order by AdjustedAdmissionDate, AdjustedAdmissionTime
