@@ -22,6 +22,7 @@ GO
 
 declare @startdate datetime = '2019-09-28 00:00:00.00' 
 declare @horizon_in_minutes int = 1440  -- 4 weeks
+declare @site varchar(50) = 'Richmond Hospital' 
 
 -- create table with a column of datetimes 
 create table #datetimes (datetimes_col datetime) 
@@ -52,7 +53,7 @@ add entry_count int, exit_count int
 update #datetimes
 set entry_count = (select count(PatientID) 
 				   from ADTCMart.ADTC.CensusView
-				   where FacilityLongName = 'Richmond Hospital' 
+				   where FacilityLongName = @site
 						and CensusDate = @startdate
 						-- todo: here you can add conditions for nursing unit, physician type, etc. 
 
@@ -67,7 +68,7 @@ alter table #datetimes
 add site varchar(25)
 
 update #datetimes
-set site = 'Richmond Hospital' 
+set site = @site
 
 -- select * from #datetimes order by datetimes_col
 
@@ -185,7 +186,7 @@ where datetimes_col = (select max(datetimes_col) from #t5_add_net_changes)
 select count(PatientID) as census_from_ADTC
 	, CensusDate
 from ADTCMart.ADTC.CensusView
-where FacilityLongName = 'Richmond Hospital' 
+where FacilityLongName = @site
 	and CensusDate between @startdate and dateadd(mi, @horizon_in_minutes, @startdate) 
 group by CensusDate
 order by CensusDate
@@ -212,7 +213,7 @@ from #t5_add_net_changes
 select count(*) as disch_from_adtc
 from ADTCMart.ADTC.AdmissionDischargeView
 where 1=1 
-	and DischargeFacilityLongName = 'Richmond Hospital' 
+	and DischargeFacilityLongName = @site
 	and AdjustedDischargeDate = @startdate 
 -- 114 discharges 
 
@@ -221,5 +222,5 @@ where 1=1
 select count(*) as admit_from_adtc
 from ADTCMart.ADTC.AdmissionDischargeView
 where 1=1 
-	and AdmissionFacilityLongName = 'Richmond Hospital' 
+	and AdmissionFacilityLongName = @site
 	and AdjustedAdmissionDate = @startdate 
