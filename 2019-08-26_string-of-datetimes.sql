@@ -1,4 +1,20 @@
 
+/********************************************************************
+Census by minute
+2019-08-26
+Nayef 
+
+Goal: trying to re-write the query for finding census by minute, using 
+joins rather than than a for loop
+
+For reference, see the query https://github.com/nayefahmad/SQL-experiments/blob/master/2018-10-19_lgh_hospitalist-census-by-tod-previous-query-copied-from-excel.sql
+
+
+********************************************************************/
+
+
+
+
 drop table if exists #datetimes
 GO  
 -- this GO statement ensures that the first thing SQL does is drop the table. This is necessary 
@@ -8,12 +24,10 @@ declare @startdate datetime = '2018-05-28 00:00:00.00'
 declare @horizon_in_minutes int = 1440  -- 4 weeks
 
 -- create table with a column of datetimes 
-drop table if exists #datetimes
 create table #datetimes (datetimes_col datetime) 
 
 insert into #datetimes values 
 	(@startdate) 
-
 
 -- select * from #datetimes
 
@@ -27,17 +41,13 @@ begin
 	set @counter = @counter + 1
 end 
 
-
-
-
 --select * from #datetimes order by datetimes_col
 
 
-
+/*********************************************************************************/
 -- add census at midnight as the first entry 
 alter table #datetimes
 add entry_count int, exit_count int
-
 
 update #datetimes
 set entry_count = (select count(*) 
@@ -49,6 +59,8 @@ set entry_count = (select count(*)
 				   group by CensusDate) 
 where datetimes_col = @startdate 
 
+--select * from #datetimes order by datetimes_col
+
 
 -- add site 
 alter table #datetimes
@@ -57,15 +69,16 @@ add site varchar(25)
 update #datetimes
 set site = 'Richmond Hospital' 
 
-
 -- select * from #datetimes order by datetimes_col
 
 
-
+/********************************************************************************
+Join datetime col to get full list of admits and discharges by minute
+*********************************************************************************/
 -- now join on ADTC.admissiondischarge: 
 drop table if exists #t4_add_admits_discharges; 
 select t1.datetimes_col
-	, t1.site
+	, t1.[site]
 	, t2_ad.AdjustedAdmissionDate
 	, t2_ad.AdjustedAdmissionTime
 	, t3_ad.AdjustedDischargeDate
@@ -86,19 +99,28 @@ from #datetimes t1
 
 order by t1.datetimes_col
 
+-- select * from #t4_add_admits_discharges order by datetimes_col
 
+/*********************************************************************************
+Code queue operations: enqueue and dequeue 
+*********************************************************************************/
 
-
+-- code every row with an admit as +1 in [entry_count]
 update #t4_add_admits_discharges
 set entry_count = 1 
 where AdjustedAdmissionDate is not null 
 
+-- code every row with an discharge as +1 in [exit_count]
 update #t4_add_admits_discharges
 set exit_count = -1
 where AdjustedDischargeDate is not null 
 
- 
 -- select * from #t4_add_admits_discharges order by datetimes_col
+
+-- TODO: do we have to deal with duplicate rows?? 
+
+
+-- find net changes to queue by minute: 
 drop table if exists #t5_add_net_changes
 select *
 	, (isnull(entry_count, 0) + isnull(exit_count, 0)) as net_change
@@ -106,7 +128,6 @@ into #t5_add_net_changes
 from #t4_add_admits_discharges
 order by datetimes_col
 
- 
 -- select * from #t5_add_net_changes order by datetimes_col
 
 
@@ -114,10 +135,9 @@ order by datetimes_col
 
 -- use correlated subquery to find running total 
 select t5_1.*
-	, (
-	select sum(net_change) 
-	from #t5_add_net_changes t5_2
-	where t5_2.datetimes_col <= t5_1.datetimes_col
+	, (select sum(net_change) 
+		from #t5_add_net_changes t5_2
+		where t5_2.datetimes_col <= t5_1.datetimes_col
 	) as census_minute_level
 
 from #t5_add_net_changes t5_1
